@@ -60,7 +60,7 @@ void solve()
     }
     vector<ll> level(n + 1, 0);
     vector<ll> subtree(n + 1, 0);
-    vector<vector<ll>> dp(n + 1, vector<ll>(18, 0));
+    vector<vector<ll>> dp(n + 1, vector<ll>(18, 0)); // for binary lifting 
 
     function<void(ll, ll)> dfs = [&](ll v, ll par) -> void
     {
