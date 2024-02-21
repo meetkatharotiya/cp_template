@@ -104,7 +104,7 @@ void solve()
         }
         ll k = level[b] - level[a]; //  move b k step up
         b = kthpar(b, k);
-
+        if(a==b)return a;
         for (ll i = 16; i >= 0; i--)
         {
             if (dp[a][i] != dp[b][i])
