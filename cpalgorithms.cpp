@@ -3,36 +3,7 @@ using namespace std;
 #define ll long long int
 // dfs
 const ll N = 1e6 + 5;
-bool vis[N];
-vector<ll> g[N];
-ll parent[N][18];
-void dfs(int v, ll par)
-{
-    vis[v] = 1;
-    parent[v][0] = par;
-    for (int i = 1; i < 18; i++)
-        parent[v][i] = parent[parent[v][i - 1]][i - 1]; // use for binary up lifting
-    for (auto u : g[v])
-    {
-        if (vis[u])
-            continue;
-        dfs(u);
-    }
 
-    /*
-    for kth parent of node
-    cin>>node>>k;
-    int cnt=0;
-    while(k){
-        if(k&1){
-            node=parent[node][cnt];
-        }
-        cnt++;
-        k=k>>1;
-    }
-    cout<<node<<endl;
-    */
-}
 vector<ll> arr(N, 1);
 void op_seive()
 { // if arr[i]==2-->prime,
