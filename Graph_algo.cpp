@@ -45,7 +45,65 @@ vector<ll> arr(N, 1);
 // vector<ll>prime;void prime_vec(){fi(0,N+1){if(arr[i]==1){prime.pb(i);}}}
 
 /*------------------------------------------------------------------------------------------------------------------------------------------*/
+void K_Length_cycle()
+{
+    ll n, m, k;
+    cin >> n >> m >> k;
+    vector<vector<ll>> g(n + 1);
+    fi(0, m)
+    {
+        ll u, v;
+        cin >> u >> v;
+        g[u].pb(v);
+        g[v].pb(u);
+    }
+    vector<ll> vis(n + 1, 0), par(n + 1, 0);
+    bool flag = 0;
+    auto dfs = [&](ll v, ll p, auto &&dfs) -> void
+    {
+        vis[v] = 1;
+        par[v] = p;
 
+        for (auto u : g[v])
+        {
+            if (!vis[u] && !flag)
+            {
+                par[u] = v;
+
+                dfs(u, v, dfs);
+            }
+            else if (vis[u] == 1)
+            {
+                ll cycle = 0;
+                for (ll i = v;; i = par[i])
+                {
+                    cycle++;
+                    if (i == u)
+                        break;
+                }
+                if (cycle > k)
+                {
+                    cout << cycle << endl;
+                    vector<ll> ans;
+                    for (ll i = v;; i = par[i])
+                    {
+                        ans.pb(i);
+                        if (i == u)
+                            break;
+                    }
+                    for (auto i : ans)
+                        cout << i << " ";
+                    cout << endl;
+                    flag = 1;
+                }
+            }
+        }
+        vis[v] = 2;
+    };
+
+    dfs(1, 1, dfs);
+    debug(par);
+}
 void solve()
 {
     ll n;
