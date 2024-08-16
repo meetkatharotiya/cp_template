@@ -45,6 +45,7 @@ vector<ll> arr(N, 1);
 // vector<ll>prime;void prime_vec(){fi(0,N+1){if(arr[i]==1){prime.pb(i);}}}
 
 /*------------------------------------------------------------------------------------------------------------------------------------------*/
+
 void K_Length_cycle()
 {
     ll n, m, k;
@@ -104,11 +105,52 @@ void K_Length_cycle()
     dfs(1, 1, dfs);
     debug(par);
 }
+
+void MAX_DIA()
+{
+    ll n;
+    cin >> n;
+    ll ans = 0;
+    vector<vector<array<ll, 2>>> g(n + 1);
+    fi(0, n - 1)
+    {
+        ll u, v, w;
+        cin >> u >> v >> w;
+        g[u].pb({v, w});
+        g[v].pb({u, w});
+        ans += 2 * w;
+    }
+    ll dia = 0;
+    auto dfs = [&](ll v, ll par, auto &&dfs) -> ll
+    {
+        ll mxh = 0, mxh2 = 0;
+
+        for (auto it : g[v])
+        {
+            ll u = it[0], w = it[1];
+            if (u == par)
+                continue;
+
+            ll h = w + dfs(u, v, dfs);
+            if (h > mxh)
+            {
+                mxh2 = mxh;
+                mxh = h;
+            }
+            else if (h > mxh2)
+                mxh2 = h;
+        }
+        dia = max(dia, mxh + mxh2);
+        return mxh;
+    };
+    ll h = dfs(1, -1, dfs);
+}
 void solve()
 {
     ll n;
     cin >> n;
     vector<ll> g[n + 1];
+
     fi(0, n - 1)
     {
         ll u, v;
@@ -118,7 +160,7 @@ void solve()
     }
     vector<ll> level(n + 1, 0);
     vector<ll> subtree(n + 1, 0);
-    vector<vector<ll>> dp(n + 1, vector<ll>(18, 0)); // for binary lifting 
+    vector<vector<ll>> dp(n + 1, vector<ll>(18, 0));
 
     function<void(ll, ll)> dfs = [&](ll v, ll par) -> void
     {
@@ -162,19 +204,19 @@ void solve()
         }
         ll k = level[b] - level[a]; //  move b k step up
         b = kthpar(b, k);
-        if(a==b)return a;
+        if (a == b)
+            return a;
         for (ll i = 16; i >= 0; i--)
         {
             if (dp[a][i] != dp[b][i])
-            { // ith par are diff than move both to that level
+            {
+                // ith par are diff than move both to that level
                 a = dp[a][i];
                 b = dp[b][i];
             }
         }
         return dp[a][0];
     };
-
-
 }
 
 int main()
