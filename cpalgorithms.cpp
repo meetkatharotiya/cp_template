@@ -2,12 +2,11 @@
 using namespace std;
 #define ll long long int
 // dfs
-const ll N = 1e6 + 5;
 
-vector<ll> arr(N, 1);
+vector<ll> arr(N, 2);
 void op_seive()
-{ // if arr[i]==2-->prime,
-    // arr[i]-->no. of factor of i,
+{ // if arr[i]==2 --> prime,
+    // arr[i] --> no. of factor of i,
     // if arr[i] is odd then it is perfect square
     arr[0] = 0;
     arr[1] = 1;
@@ -88,20 +87,20 @@ ll primefactor(ll n)
         factor *= 2;
     }
 
-    for (auto x : v)
-        cout << x << " ";
+    // for (auto x : v)
+    //     cout << x << " ";
 }
 ll SQRT(ll x)
 {
     ll ans = 0;
-    for (ll k = 1 << 30; k != 0; k /= 2)
+    for (ll k = 1ll << 30; k != 0; k /= 2)
     {
         if ((ans + k) * (ans + k) < x)
             ans += k;
     }
     return ans;
 }
-vector<ll> z_function(string s)
+vector<ll> z_function(string s) // pref start from that index (ex. abcabc = 000300)
 {
     ll n = s.size();
     vector<ll> z(n);
@@ -123,6 +122,24 @@ vector<ll> z_function(string s)
         }
     }
     return z;
+}
+
+vector<ll> KMP(string &s) // pref till that index (ex. abcabc = 000123)
+{
+    // m=pat.length();
+    // after geting vector if v[i]==m the it start from i-2*m
+    ll n = s.length();
+    vector<ll> pi(n);
+    for (ll i = 1; i < n; i++)
+    {
+        ll j = pi[i - 1];
+        while (j > 0 && s[i] != s[j])
+            j = pi[j - 1];
+        if (s[i] == s[j])
+            j++;
+        pi[i] = j;
+    }
+    return pi;
 }
 // MEX elemnt
 ll MEX(vector<ll> &a)
@@ -157,18 +174,46 @@ mt19937 rng(chrono::steady_clock::now().time_since_epoch().count());
 // ll getRandomNumber(ll l, ll r) {return uniform_int_distribution<ll>(l, r)(rng);}
 // unique path of grid is (m+n-2)C(n-1) or (m+n-2)C(m-1) in O(1)
 /*---------------------------------------------------------------------------------------------------------------------------*/
-long long ncr(long long n, ll r, ll p)
+vector<ll> Centroid(vector<vector<ll>> g, ll root)
 {
-    if (n < r)
-        return 0;
+    // take as lamda function
+    ll n = g.size();
+    vector<ll> centroid;
+    vector<ll> sz(n + 1);
+    function<void(ll, ll)> dfs = [&](ll v, ll prev)
+    {
+        sz[v] = 1;
+        bool is_centroid = true;
+        for (auto u : g[v])
+            if (u != prev)
+            {
+                dfs(u, v);
+                sz[v] += sz[u];
+                if (sz[u] > n / 2)
+                    is_centroid = false;
+            }
+        if (n - sz[v] > n / 2)
+            is_centroid = false;
+        if (is_centroid)
+            centroid.push_back(v);
+    };
+    dfs(root, -1);
+    return centroid;
+}
 
-    if (r == 0)
-        return 1;
-    long long fac[n + 1];
-    fac[0] = 1;
-    for (int i = 1; i <= n; i++)
-        fac[i] = (fac[i - 1] * i) % p;
-    return (fac[n] * inv(fac[r], p) % p * inv(fac[n - r], p) % p) % p;
+ll FACT()
+{
+    fact[0] = 1;
+    fact[1] = 1;
+    fi(2, N)
+    {
+        fact[i] = (fact[i - 1] * i) % mod;
+    }
+    inv_fact[N - 1] = power(fact[N - 1], mod - 2);
+    fir(N - 2, 0)
+    {
+        inv_fact[i] = (inv_fact[i + 1] * 1ll * (i + 1)) % mod;
+    }
 }
 
 struct DSU
@@ -208,33 +253,34 @@ struct DSU
 
 struct dat
 {
-    ll g;
+    ll mn, mx;
 };
 
 struct sgtree // 1 based array
 {
-    ll sz;
-    vector<dat> v;
+    ll sz, n;
+    vector<dat> tree;
 
-    dat neutral_element = {0};
+    dat neutral_element = {INT_MAX, INT_MIN};
 
     dat merge(dat a, dat b) //---------> changes..
     {
-        dat ans = {__gcd(a.g, b.g)};
+        dat ans = {min(a.mn, b.mn), max(a.mx, b.mx)};
         return ans;
     }
 
     dat single(ll x) //-------------> changes..
     {
-        return {x, 1};
+        return {x, x};
     }
 
     void init(ll n)
     {
-        sz = 1;
-        while (sz < n)
-            sz *= 2;
-        v.resize(2 * sz);
+        this->n = n;
+        // sz = 1;
+        // while (sz < n)
+        //     sz *= 2;
+        tree.resize(4 * n);
     }
 
     void build(vector<ll> &a, ll x, ll lx, ll rx)
@@ -242,26 +288,26 @@ struct sgtree // 1 based array
         if (rx == lx)
         {
             if (lx <= a.size())
-                v[x] = single(a[lx]);
+                tree[x] = single(a[lx]);
             return;
         }
 
         ll mid = (lx + rx) / 2;
         build(a, 2 * x, lx, mid);
         build(a, 2 * x + 1, mid + 1, rx);
-        v[x] = merge(v[2 * x], v[2 * x + 1]);
+        tree[x] = merge(tree[2 * x], tree[2 * x + 1]);
     }
 
     void build(vector<ll> &a)
     {
-        build(a, 1ll, 1ll, sz);
+        build(a, 1ll, 1ll, n);
     }
 
     void set(ll ind, ll val, ll x, ll lx, ll rx)
     {
         if (rx == lx)
         {
-            v[x] = single(val);
+            tree[x] = single(val);
             return;
         }
 
@@ -276,18 +322,18 @@ struct sgtree // 1 based array
             set(ind, val, 2 * x + 1, mid + 1, rx);
         }
 
-        v[x] = merge(v[2 * x], v[2 * x + 1]);
+        tree[x] = merge(tree[2 * x], tree[2 * x + 1]);
     }
 
     void set(ll ind, ll val)
     {
-        set(ind, val, 1ll, 1ll, sz);
+        set(ind, val, 1ll, 1ll, n);
     }
 
     dat calc(ll l, ll r, ll x, ll lx, ll rx)
     {
         if (l <= lx && rx <= r)
-            return v[x];
+            return tree[x];
 
         if (lx > r || rx < l)
             return neutral_element;
@@ -300,13 +346,46 @@ struct sgtree // 1 based array
 
     dat calc(ll l, ll r)
     {
-        return calc(l, r, 1, 1, sz);
+        return calc(l, r, 1, 1, n);
+    }
+    ll find_mx(ll l, ll r, ll val, ll x, ll lx, ll rx) // idx_ of elem >val
+    {
+        if (lx > r || rx < l || tree[x].mx < val)
+            return -1;
+
+        if (lx == rx)
+            return rx;
+        ll mid = (lx + rx) / 2;
+        ll left = find_mx(l, r, val, 2 * x, lx, mid);
+        if (left != -1)
+            return left;
+        return find_mx(l, r, val, 2 * x + 1, mid + 1, rx);
+    }
+    ll find_mx(ll l, ll r, ll x)
+    {
+        return find_mx(l, r, x, 1, 1, n);
+    }
+    ll find_mn(ll l, ll r, ll val, ll x, ll lx, ll rx) // idx of elem  < val
+    {
+        if (lx > r || rx < l || tree[x].mn >= val)
+            return -1;
+
+        if (lx == rx)
+            return rx;
+        ll mid = (lx + rx) / 2;
+        ll left = find_mn(l, r, val, 2 * x, lx, mid);
+        if (left != -1)
+            return left;
+        return find_mn(l, r, val, 2 * x + 1, mid + 1, rx);
+    }
+    ll find_mn(ll l, ll r, ll x)
+    {
+        return find_mn(l, r, x, 1, 1, n);
     }
 };
 
 int main()
 {
 
-    cout << binarymul(2, 4) << endl;
     return 0;
 }
