@@ -253,7 +253,7 @@ struct DSU
 
 struct dat
 {
-    ll mn, mx;
+    ll res, mxl, mnr, mnl, mxr;
 };
 
 struct sgtree // 1 based array
@@ -261,17 +261,23 @@ struct sgtree // 1 based array
     ll sz, n;
     vector<dat> tree;
 
-    dat neutral_element = {INT_MAX, INT_MIN};
+    dat neutral_element = {0, INT_MIN, INT_MIN, INT_MIN, INT_MIN};
 
     dat merge(dat a, dat b) //---------> changes..
     {
-        dat ans = {min(a.mn, b.mn), max(a.mx, b.mx)};
+        dat ans;
+        ans.res = max(a.res, b.res);
+        ans.res = max({ans.res, a.mxl + b.mnr, b.mxr + a.mnl});
+        ans.mxl = max(a.mxl, b.mxl);
+        ans.mxr = max(a.mxr, b.mxr);
+        ans.mnl = max(a.mnl, b.mnl);
+        ans.mnr = max(a.mnr, b.mnr);
+
         return ans;
     }
-
-    dat single(ll x) //-------------> changes..
+    dat single(ll x, ll idx) //-------------> changes..
     {
-        return {x, x};
+        return {0, x + idx, -x - idx, -x + idx, x - idx};
     }
 
     void init(ll n)
@@ -288,7 +294,7 @@ struct sgtree // 1 based array
         if (rx == lx)
         {
             if (lx < a.size())
-                tree[x] = single(a[lx]);
+                tree[x] = single(a[lx], lx);
             return;
         }
 
@@ -307,7 +313,8 @@ struct sgtree // 1 based array
     {
         if (rx == lx)
         {
-            tree[x] = single(val);
+
+            tree[x] = single(val, lx);
             return;
         }
 
