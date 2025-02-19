@@ -154,6 +154,41 @@ ll MEX(vector<ll> &a)
         }
     }
 }
+auto get_primefactor = [&](ll n) -> unordered_map<ll, ll>
+{
+    unordered_map<ll, ll> f;
+    while (n > 1)
+    {
+        ll p = (n < N) ? spf[n] : n;
+        f[p]++;
+        n /= p;
+    }
+    return f;
+};
+
+auto get_allFact_usingPrime = [&](auto &f) -> vector<ll>
+{
+    vector<ll> divs = {1};
+    for (auto &x : f)
+    {
+        ll prime = x.ff;
+        ll exp = x.ss;
+        vector<ll> n_divs;
+        ll mul = 1;
+        for (ll e = 0; e <= exp; e++)
+        {
+            for (ll d : divs)
+            {
+                n_divs.push_back(d * mul);
+            }
+            debug(mul, n_divs);
+            mul *= prime;
+        }
+        divs = n_divs;
+        // debug(divs);
+    }
+    return divs;
+};
 
 mt19937 rng(chrono::steady_clock::now().time_since_epoch().count());
 /*---------------------------------------------------------------------------------------------------------------------------*/
